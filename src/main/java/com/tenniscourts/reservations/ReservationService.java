@@ -65,6 +65,15 @@ public class ReservationService {
         });
     }
 
+    public ReservationDTO noShow(Long reservationId) {
+        return reservationRepository.findById(reservationId).map(reservation -> {
+            this.validateNoShow(reservation);
+            return reservationMapper.map(this.updateReservation(reservation, BigDecimal.valueOf(0), ReservationStatus.NOT_SHOW_UP));
+        }).orElseThrow(() -> {
+            throw new EntityNotFoundException("Reservation not found.");
+        });
+    }
+
     private Reservation updateReservation(Reservation reservation, BigDecimal refundValue, ReservationStatus status) {
         reservation.setReservationStatus(status);
         reservation.setValue(reservation.getValue().subtract(refundValue));
@@ -82,6 +91,17 @@ public class ReservationService {
             throw new IllegalArgumentException("Can cancel/reschedule only future dates.");
         }
     }
+
+    private void validateNoShow(Reservation reservation) {
+        if (!ReservationStatus.READY_TO_PLAY.equals(reservation.getReservationStatus())) {
+            throw new IllegalArgumentException("Cannot set as NOT-SHOW-UP because it's not in ready to play status.");
+        }
+
+        if (reservation.getSchedule().getEndDateTime().isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Can cancel/reschedule only past dates.");
+        }
+    }
+
 
     public BigDecimal getRefundValue(Reservation reservation) {
         long hours = ChronoUnit.HOURS.between(LocalDateTime.now(), reservation.getSchedule().getStartDateTime());

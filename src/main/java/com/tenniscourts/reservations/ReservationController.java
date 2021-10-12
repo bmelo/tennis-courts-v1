@@ -36,6 +36,12 @@ public class ReservationController extends BaseRestController {
         return ResponseEntity.ok(reservationService.findReservation(reservationId));
     }
 
+    @ApiOperation(value = "Mark a reservation as NOT-SHOW-UP.")
+    @PutMapping("/no-show/{reservationId}")
+    public ResponseEntity<ReservationDTO> notShowUp(@PathVariable Long reservationId) {
+        return ResponseEntity.ok(reservationService.noShow(reservationId));
+    }
+
     @ApiOperation(value = "Cancel a reservation using the ID.")
     @DeleteMapping("/{reservationId}")
     public ResponseEntity<ReservationDTO> cancelReservation(@PathVariable Long reservationId) {
