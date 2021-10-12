@@ -1,8 +1,12 @@
 package com.tenniscourts.reservations;
 
 import com.tenniscourts.exceptions.EntityNotFoundException;
+import com.tenniscourts.guests.Guest;
+import com.tenniscourts.guests.GuestRepository;
 import com.tenniscourts.reservations.requests.CreateReservationRequestDTO;
 import com.tenniscourts.reservations.requests.RescheduleRequestDTO;
+import com.tenniscourts.schedules.Schedule;
+import com.tenniscourts.schedules.ScheduleRepository;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,11 +20,26 @@ import java.time.temporal.ChronoUnit;
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
+    private final GuestRepository guestRepository;
+    private final ScheduleRepository scheduleRepository;
 
     private final ReservationMapper reservationMapper;
 
     public ReservationDTO bookReservation(CreateReservationRequestDTO createReservationRequestDTO) {
-        throw new UnsupportedOperationException();
+        Guest guest = guestRepository.findById(createReservationRequestDTO.getGuestId()).orElseThrow(() -> {
+            throw new EntityNotFoundException("Guest not found.");
+        });
+        Schedule schedule = scheduleRepository.findById(createReservationRequestDTO.getScheduleId()).orElseThrow(() -> {
+            throw new EntityNotFoundException("Schedule not found.");
+        });
+        Reservation reservation = Reservation.builder()
+                                    .guest(guest)
+                                    .schedule(schedule)
+                                    .value(BigDecimal.valueOf(10))
+                                    .reservationStatus(ReservationStatus.READY_TO_PLAY)
+                                    .build();
+                                    
+        return reservationMapper.map(reservationRepository.saveAndFlush(reservation));
     }
 
     public ReservationDTO findReservation(Long reservationId) {
@@ -80,17 +99,19 @@ public class ReservationService {
         return BigDecimal.ZERO;
     }
 
-    /*TODO: This method actually not fully working, find a way to fix the issue when it's throwing the error:
-            "Cannot reschedule to the same slot.*/
     public ReservationDTO rescheduleReservation(RescheduleRequestDTO rescheduleFormDTO) {
-        Long previousReservationId = rescheduleFormDTO.getReservationId();
+        ReservationDTO reservationDTO = findReservation(rescheduleFormDTO.getReservationId());
+        Long previousScheduleId = reservationDTO.getSchedule().getId();
         Long scheduleId = rescheduleFormDTO.getScheduleId();
         
-        if (scheduleId.equals(previousReservationId)) {
+        System.out.println(scheduleId);
+        System.out.println(previousScheduleId);
+
+        if (scheduleId.equals(previousScheduleId)) {
             throw new IllegalArgumentException("Cannot reschedule to the same slot.");
         }
         
-        Reservation previousReservation = cancel(previousReservationId);
+        Reservation previousReservation = cancel(reservationDTO.getId());
         previousReservation.setReservationStatus(ReservationStatus.RESCHEDULED);
         reservationRepository.save(previousReservation);
 
