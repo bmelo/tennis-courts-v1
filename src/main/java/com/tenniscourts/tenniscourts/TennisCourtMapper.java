@@ -1,5 +1,7 @@
 package com.tenniscourts.tenniscourts;
 
+import java.util.List;
+
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 
@@ -9,4 +11,6 @@ public interface TennisCourtMapper {
 
     @InheritInverseConfiguration
     TennisCourt map(TennisCourtDTO source);
+
+    List<TennisCourtDTO> map(List<TennisCourt> source);
 }

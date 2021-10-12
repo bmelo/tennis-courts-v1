@@ -1,6 +1,10 @@
 package com.tenniscourts.tenniscourts;
 
+import java.util.List;
+
 import com.tenniscourts.config.BaseRestController;
+import com.tenniscourts.tenniscourts.requests.CreateTennisCourtRequestDTO;
+
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,10 +22,17 @@ public class TennisCourtController extends BaseRestController {
 
     private final TennisCourtService tennisCourtService;
 
+    @ApiOperation(value = "List all tennis courts.")
+    @GetMapping
+    public ResponseEntity<List<TennisCourtDTO>> listAll() {
+        return ResponseEntity.ok(tennisCourtService.findAllTennisCourt());
+    }
+
     @ApiOperation(value = "Register a tennis court.")
     @PostMapping
-    public ResponseEntity<Void> addTennisCourt(TennisCourtDTO tennisCourtDTO) {
-        return ResponseEntity.created(locationByEntity(tennisCourtService.addTennisCourt(tennisCourtDTO).getId())).build();
+    public ResponseEntity<Void> addTennisCourt(CreateTennisCourtRequestDTO createTennisCourtDTO) {
+        TennisCourtDTO newTennisCourt = TennisCourtDTO.builder().name(createTennisCourtDTO.getName()).build();
+        return ResponseEntity.created(locationByEntity(tennisCourtService.addTennisCourt(newTennisCourt).getId())).build();
     }
 
     @ApiOperation(value = "Find a tennis court using the ID.")

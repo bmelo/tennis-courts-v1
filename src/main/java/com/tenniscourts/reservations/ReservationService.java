@@ -1,6 +1,9 @@
 package com.tenniscourts.reservations;
 
 import com.tenniscourts.exceptions.EntityNotFoundException;
+import com.tenniscourts.reservations.requests.CreateReservationRequestDTO;
+import com.tenniscourts.reservations.requests.RescheduleRequestDTO;
+
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -66,6 +69,12 @@ public class ReservationService {
 
         if (hours >= 24) {
             return reservation.getValue();
+        } else if (hours >= 12) {
+            return reservation.getValue().multiply(BigDecimal.valueOf(0.75));
+        } else if (hours >= 2) {
+            return reservation.getValue().multiply(BigDecimal.valueOf(0.5));
+        } else if (hours >= 0) {
+            return reservation.getValue().multiply(BigDecimal.valueOf(0.25));
         }
 
         return BigDecimal.ZERO;
@@ -74,13 +83,14 @@ public class ReservationService {
     /*TODO: This method actually not fully working, find a way to fix the issue when it's throwing the error:
             "Cannot reschedule to the same slot.*/
     public ReservationDTO rescheduleReservation(RescheduleRequestDTO rescheduleFormDTO) {
-        Reservation previousReservation = cancel(rescheduleFormDTO.getReservationId());
+        Long previousReservationId = rescheduleFormDTO.getReservationId();
         Long scheduleId = rescheduleFormDTO.getScheduleId();
-
-        if (scheduleId.equals(previousReservation.getSchedule().getId())) {
+        
+        if (scheduleId.equals(previousReservationId)) {
             throw new IllegalArgumentException("Cannot reschedule to the same slot.");
         }
-
+        
+        Reservation previousReservation = cancel(previousReservationId);
         previousReservation.setReservationStatus(ReservationStatus.RESCHEDULED);
         reservationRepository.save(previousReservation);
 

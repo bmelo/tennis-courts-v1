@@ -1,6 +1,9 @@
 package com.tenniscourts.reservations;
 
 import com.tenniscourts.config.BaseRestController;
+import com.tenniscourts.reservations.requests.CreateReservationRequestDTO;
+import com.tenniscourts.reservations.requests.RescheduleRequestDTO;
+
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;

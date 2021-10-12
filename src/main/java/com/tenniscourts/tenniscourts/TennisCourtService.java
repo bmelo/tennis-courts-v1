@@ -1,5 +1,7 @@
 package com.tenniscourts.tenniscourts;
 
+import java.util.List;
+
 import com.tenniscourts.exceptions.EntityNotFoundException;
 import com.tenniscourts.schedules.ScheduleService;
 import lombok.AllArgsConstructor;
@@ -14,6 +16,10 @@ public class TennisCourtService {
     private final ScheduleService scheduleService;
 
     private final TennisCourtMapper tennisCourtMapper;
+
+    public List<TennisCourtDTO> findAllTennisCourt() {
+        return tennisCourtMapper.map(tennisCourtRepository.findAll());
+    }
 
     public TennisCourtDTO addTennisCourt(TennisCourtDTO tennisCourt) {
         return tennisCourtMapper.map(tennisCourtRepository.saveAndFlush(tennisCourtMapper.map(tennisCourt)));
